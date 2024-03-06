@@ -27,6 +27,47 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
+// Funktion zum Laden der Tasks aus Firestore und Anzeigen im Dashboard
+function loadTasksIntoHTML() {
+    const tasksRef = collection(db, "users", auth.currentUser.uid, "projects", currentProject, "tasks");
+    getDocs(tasksRef)
+        .then(querySnapshot => {
+            const tasks = [];
+            querySnapshot.forEach(doc => {
+                const taskData = doc.data();
+                const task = {id: doc.id, ...taskData};
+                tasks.push(task);
+            });
+            updateTasksDisplay(tasks); // Update UI with tasks
+            updateTaskCount(tasks.length); // Update task count
+        })
+        .catch(error => {
+            console.error("Error loading tasks: ", error);
+        });
+}
+
+// Funktion zum Aktualisieren der Task-Anzahl im Dashboard
+// Funktion zum Aktualisieren der Task-Anzahl im Dashboard
+function updateTaskCount(count) {
+    // Zugriff auf das Element, das die Anzahl der Tasks anzeigt, und Aktualisierung seines Inhalts
+    document.getElementById('task-count').innerText = count;
+}
+
+// Funktion zum Aktualisieren der Task-Liste im UI
+function updateTasksDisplay(tasks) {
+    const todoList = document.querySelector('.todo-list');
+    todoList.innerHTML = ''; // Clear existing tasks
+    tasks.forEach(task => {
+        const taskElement = document.createElement('li');
+        taskElement.className = task.completed ? 'completed' : 'not-completed';
+        taskElement.innerHTML = `<p>${task.title}</p><i class='bx bx-dots-vertical-rounded' ></i>`;
+        todoList.appendChild(taskElement);
+    });
+}
+
+// Stellen Sie sicher, dass diese Funktion aufgerufen wird, wenn der Benutzer authentifiziert ist und das Dashboard angezeigt wird
+loadTasksIntoHTML();
+
 // SIDE MENU
 
 const allSideMenu = document.querySelectorAll('#sidebar .side-menu.top li a');
